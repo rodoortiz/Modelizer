@@ -2,7 +2,7 @@ macro(create_plugin target name companyName manufacturerCode pluginCode version)
     juce_add_plugin(${target}
             PLUGIN_MANUFACTURER_CODE ${manufacturerCode}
             PLUGIN_CODE ${pluginCode}
-            FORMATS AU VST3 Standalone
+            FORMATS AU VST3
             PRODUCT_NAME ${name}
             COMPANY_NAME ${companyName}
             IS_SYNTH FALSE
