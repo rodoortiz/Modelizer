@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.17)
 
-set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Universal Build" FORCE)
+set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Universal Build" FORCE)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14 CACHE STRING "minimum macos target" FORCE)
 set(ENV{CC} "clang")
 set(ENV{CXX} "clang++")

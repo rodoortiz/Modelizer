@@ -27,9 +27,16 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    void loadModelFromPytorch();
+
 private:
 
+    torch::jit::script::Module model;
 
+    juce::AudioSampleBuffer modelBuffer;
+
+    int sizeBuffer;
+    int numChannels;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginAudioProcessor)
 };
