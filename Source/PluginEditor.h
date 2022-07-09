@@ -13,5 +13,7 @@ public:
     void resized() override;
 
 private:
+
     PluginAudioProcessor& audioProcessor;
+
 };

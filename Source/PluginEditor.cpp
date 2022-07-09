@@ -1,15 +1,11 @@
 #include "PluginEditor.h"
 
-PluginAudioProcessorEditor::PluginAudioProcessorEditor(PluginAudioProcessor &p) : AudioProcessorEditor(p),
-                                                                                  audioProcessor(p)
+PluginAudioProcessorEditor::PluginAudioProcessorEditor(PluginAudioProcessor &p) : AudioProcessorEditor(p), audioProcessor(p)
 {
     setSize(500, 500);
 }
 
-PluginAudioProcessorEditor::~PluginAudioProcessorEditor()
-{
-
-}
+PluginAudioProcessorEditor::~PluginAudioProcessorEditor(){}
 
 void PluginAudioProcessorEditor::paint(juce::Graphics &g)
 {
@@ -18,5 +14,5 @@ void PluginAudioProcessorEditor::paint(juce::Graphics &g)
 
 void PluginAudioProcessorEditor::resized()
 {
-
+    
 }
