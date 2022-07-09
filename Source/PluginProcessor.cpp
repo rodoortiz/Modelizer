@@ -12,11 +12,12 @@ PluginAudioProcessor::PluginAudioProcessor()
                        )
 {
     loadModelFromPytorch();
+    formatManager.registerBasicFormats();
 }
 
 PluginAudioProcessor::~PluginAudioProcessor()
 {
-
+    formatReader = nullptr;
 }
 
 void PluginAudioProcessor::loadModelFromPytorch()
@@ -31,6 +32,62 @@ void PluginAudioProcessor::loadModelFromPytorch()
     {
         DBG ("ERROR LOADING MODEL");
     }
+}
+
+void PluginAudioProcessor::processOfflineWithModel()
+{
+    DBG("CLICK");
+
+    // *********************** Import audio ******************** //
+    juce::AudioBuffer<float> audioBufferOffline;
+
+    auto fileLoaded = juce::File("/Users/rodolfoortiz/Downloads/TestZafiro Guitar 1.wav");
+    formatReader = formatManager.createReaderFor(fileLoaded);
+
+    auto sampleLength = static_cast<int>(formatReader->lengthInSamples);
+    audioBufferOffline.setSize(2, sampleLength);
+
+    formatReader->read(&audioBufferOffline, 0, sampleLength, 0, true, false);
+
+    // ****************** Process with model ************************ //
+    juce::AudioBuffer<float> bufferOfflineProcessed;
+    bufferOfflineProcessed.makeCopyOf(audioBufferOffline);
+
+    sizeBuffer = sampleLength;
+    std::vector<int64_t> blockSize = { sizeBuffer };
+
+    auto* modelBufferDataL = bufferOfflineProcessed.getWritePointer(0);
+    auto* modelBufferDataR = bufferOfflineProcessed.getWritePointer(1);
+
+    at::Tensor tensorFrameL = torch::from_blob(modelBufferDataL, blockSize);
+    at::Tensor tensorFrameR = torch::from_blob(modelBufferDataR, blockSize);
+    at::Tensor tensorFrame = at::stack({tensorFrameL, tensorFrameR});
+
+    tensorFrame = torch::reshape(tensorFrame, { 1, numChannels, sizeBuffer });
+
+    std::vector<torch::jit::IValue> inputs;
+    inputs.emplace_back(tensorFrame);
+
+    auto outputFrame = model.forward(inputs).toTensor();
+
+    for (int channel = 0; channel < 2; ++channel)
+    {
+        auto outputData = outputFrame.index({0, channel, torch::indexing::Slice()});
+        auto outputDataPtr = outputData.data_ptr<float>();
+        audioBufferOffline.copyFrom (channel, 0, outputDataPtr, sizeBuffer);
+    }
+
+    // *********************** Export audio ******************** //
+    juce::File fileOut("/Users/rodolfoortiz/Downloads/test.wav");
+    fileOut.deleteFile();
+
+    juce::WavAudioFormat format;
+    std::unique_ptr<juce::AudioFormatWriter> writer;
+
+    writer.reset(format.createWriterFor(new juce::FileOutputStream(fileOut), 44100, audioBufferOffline.getNumChannels(), 24, {}, 0));
+
+    if (writer != nullptr)
+        writer->writeFromAudioSampleBuffer(audioBufferOffline, 0, audioBufferOffline.getNumSamples());
 }
 
 const juce::String PluginAudioProcessor::getName() const
@@ -104,7 +161,7 @@ bool PluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) c
 
 void PluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    modelBuffer.makeCopyOf(buffer);
+    /*modelBuffer.makeCopyOf(buffer);
 
     std::vector<int64_t> blockSize = { buffer.getNumSamples() };
 
@@ -127,7 +184,7 @@ void PluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         auto outputData = outputFrame.index({0, channel, torch::indexing::Slice()});
         auto outputDataPtr = outputData.data_ptr<float>();
         buffer.copyFrom (channel, 0, outputDataPtr, sizeBuffer);
-    }
+    }*/
 }
 
 bool PluginAudioProcessor::hasEditor() const

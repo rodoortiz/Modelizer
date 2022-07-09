@@ -29,14 +29,21 @@ public:
 
     void loadModelFromPytorch();
 
+    void processOfflineWithModel();
+
 private:
 
-    torch::jit::script::Module model;
-
-    juce::AudioSampleBuffer modelBuffer;
-
+    // General data
     int sizeBuffer;
     int numChannels;
+
+    // Model data
+    torch::jit::script::Module model;
+    juce::AudioSampleBuffer modelBuffer;
+
+    // Offline data
+    juce::AudioFormatManager formatManager;
+    juce::AudioFormatReader* formatReader {nullptr};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginAudioProcessor)
 };

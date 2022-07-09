@@ -43,13 +43,4 @@ macro(create_plugin target name companyName manufacturerCode pluginCode version)
             juce::juce_recommended_warning_flags
             "${TORCH_LIBRARIES}")
 
-    file(GLOB_RECURSE RESOURCES 
-        ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
-    )
-    
-    if(RESOURCES)
-      juce_add_binary_data(plugin_resources SOURCES ${RESOURCES})
-      target_link_libraries(${target} PUBLIC pligin_resources)
-    endif()
-
 endmacro()
