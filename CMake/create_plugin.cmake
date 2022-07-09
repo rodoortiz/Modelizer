@@ -40,7 +40,8 @@ macro(create_plugin target name companyName manufacturerCode pluginCode version)
             PUBLIC
             juce::juce_recommended_config_flags
             juce::juce_recommended_lto_flags
-            juce::juce_recommended_warning_flags)
+            juce::juce_recommended_warning_flags
+            "${TORCH_LIBRARIES}")
 
     file(GLOB_RECURSE RESOURCES 
         ${CMAKE_CURRENT_SOURCE_DIR}/Assets/

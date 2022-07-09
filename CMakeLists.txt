@@ -8,11 +8,19 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(Modelizer VERSION 1.0.0)
 
+set(CMAKE_PREFIX_PATH libtorch/)
+find_package(Torch REQUIRED)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+
 include(CMake/get_juce.cmake)
 include(CMake/create_plugin.cmake)
 include(CMake/add_sources.cmake)
 
 include_directories(Source)
+
+# target_link_libraries(${PROJECT_NAME}
+#     PUBLIC
+#         "${TORCH_LIBRARIES}")
 
 # create_plugin(MyPlugin "My plugin" "Company Name" COMPANY_ID PLUGIN_ID)
 create_plugin(${PROJECT_NAME} ${PROJECT_NAME} "NNModels" Nnmd Mdlz 1.0.0)
