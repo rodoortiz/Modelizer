@@ -3,3 +3,4 @@ cmake-build-release
 .DS_Store
 .idea
 libtorch
+build

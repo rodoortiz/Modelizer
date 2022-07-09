@@ -31,6 +31,8 @@ public:
 
     void processOfflineWithModel();
 
+    void processRealTimeWithModel(juce::AudioBuffer<float>& inBuffer);
+
 private:
 
     // General data
@@ -44,6 +46,13 @@ private:
     // Offline data
     juce::AudioFormatManager formatManager;
     juce::AudioFormatReader* formatReader {nullptr};
+
+    juce::AudioBuffer<float> processedModelBuffer[2];
+    juce::AudioBuffer<float> auxBuffer[2];
+
+    int contSampleAux[2];
+    int contLoop[2];
+    float multSamplerate {0.125f};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginAudioProcessor)
 };

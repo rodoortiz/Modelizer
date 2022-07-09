@@ -25,6 +25,7 @@ void PluginAudioProcessor::loadModelFromPytorch()
     try
     {
         model = torch::jit::load("/Users/rodolfoortiz/Documents/JUCE_Projects/CLion_Projects/Modelizer/ChannelKillerTS.pt");
+        //model = torch::jit::load("/Users/rodolfoortiz/Documents/JUCE_Projects/CLion_Projects/Modelizer/MCClipperModelTS.pt");
         DBG("MODEL LOADED");
     }
 
@@ -150,6 +151,17 @@ void PluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 {
     sizeBuffer = getBlockSize();
     numChannels = getTotalNumInputChannels();
+
+    for(auto channel = 0; channel < numChannels; channel++)
+    {
+        auto lengthInSamples = static_cast<int>(getSampleRate() * multSamplerate);
+
+        processedModelBuffer[channel].setSize (numChannels, lengthInSamples, false, false, true);
+        //processedModelBuffer[channel].clear();
+
+        auxBuffer[channel].setSize(numChannels, lengthInSamples, false, false, true);
+        //auxBuffer[channel].clear();
+    }
 }
 
 void PluginAudioProcessor::releaseResources() {}
@@ -161,6 +173,8 @@ bool PluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) c
 
 void PluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    auto numSamples = buffer.getNumSamples();
+
     /*modelBuffer.makeCopyOf(buffer);
 
     std::vector<int64_t> blockSize = { buffer.getNumSamples() };
@@ -185,6 +199,74 @@ void PluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         auto outputDataPtr = outputData.data_ptr<float>();
         buffer.copyFrom (channel, 0, outputDataPtr, sizeBuffer);
     }*/
+
+    for (auto channel = 0; channel < numChannels; channel++)
+    {
+        for (int i = 0; i < numSamples; i++) {
+            float sample = buffer.getSample(channel, i);
+
+            // FILL GRAIN WITH SAMPLE
+            auxBuffer[channel].setSample(channel, contSampleAux[channel], sample);
+            contSampleAux[channel]++;
+
+            // GET REVERSED SAMPLE
+            float outBuffer = processedModelBuffer[channel].getSample(channel, contSampleAux[channel]);
+
+            // IF IS THE FIRST LOOP PASS NORMAL AUDIO IF NOT REVERSE SAMPLE (IN ORDER TO NOT HAVE SILENCE)
+            if (contLoop[channel] > 0)
+                buffer.setSample(channel, i, outBuffer);
+            else
+                buffer.setSample(channel, i, sample);
+
+            // IF GRAIN IS FULL
+            if (contSampleAux[channel] >= auxBuffer[channel].getNumSamples() - 1) {
+                // RESET CONT LOOP
+                contSampleAux[channel] = 0;
+
+                // MAKE COPY OF LOOP AND REVERSE
+                //processedModelBuffer[channel].clear();
+                processedModelBuffer[channel].makeCopyOf(auxBuffer[channel], true);
+
+                // PROCESS WITH MODEL ->>>> SE MANDA A OTRO THREAD
+                processRealTimeWithModel(processedModelBuffer[channel]);
+
+                // CLEAR LOOP
+                //auxBuffer[channel].clear();
+
+                // ADD LOOP COUNT
+                contLoop[channel]++;
+            }
+        }
+    }
+}
+
+void PluginAudioProcessor::processRealTimeWithModel(juce::AudioBuffer<float>& inBuffer)
+{
+    modelBuffer.makeCopyOf(inBuffer);
+
+    std::vector<int64_t> blockSize = { inBuffer.getNumSamples() };
+
+    auto* modelBufferDataL = modelBuffer.getWritePointer(0);
+    auto* modelBufferDataR = modelBuffer.getWritePointer(1);
+
+    at::Tensor tensorFrameL = torch::from_blob(modelBufferDataL, blockSize);
+    at::Tensor tensorFrameR = torch::from_blob(modelBufferDataR, blockSize);
+    at::Tensor tensorFrame = at::stack({tensorFrameL, tensorFrameR});
+
+    sizeBuffer = static_cast<int>(getSampleRate() * multSamplerate);
+    tensorFrame = torch::reshape(tensorFrame, { 1, numChannels, sizeBuffer });
+
+    std::vector<torch::jit::IValue> inputs;
+    inputs.emplace_back(tensorFrame);
+
+    auto outputFrame = model.forward(inputs).toTensor();
+
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        auto outputData = outputFrame.index({0, channel, torch::indexing::Slice()});
+        auto outputDataPtr = outputData.data_ptr<float>();
+        inBuffer.copyFrom (channel, 0, outputDataPtr, sizeBuffer);
+    }
 }
 
 bool PluginAudioProcessor::hasEditor() const
