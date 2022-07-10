@@ -7,7 +7,7 @@ class ThreadProcessing : public juce::Thread
 {
 public:
     
-    ThreadProcessing (std::vector<float>& array, std::vector<float>& arrayTwo) : juce::Thread("Buffer Thread"), vectorDataOne(array), vectorDataTwo(arrayTwo)
+    ThreadProcessing (std::vector<float>& array, std::vector<float>& arrayTwo, juce::String inPath) : juce::Thread("Buffer Thread"), vectorDataOne(array), vectorDataTwo(arrayTwo), path(inPath.toStdString())
     {
         formatManager.registerBasicFormats();
 
@@ -45,32 +45,22 @@ public:
         
         //**************************** Load Model *********************** //
         try
-        {
-            model = std::make_unique<torch::jit::script::Module>(torch::jit::load("/Users/rodolfoortiz/Documents/JUCE_Projects/CLion_Projects/Modelizer/ATanDistortionTS.pt"));
-            //model = std::make_unique<torch::jit::script::Module>(torch::jit::load("Users/jsvaldezv/Documents/GitHub/Personal/Modelizer/ATanDistortionTS.pt"));
-            
+        {            
+            DBG(path);
+            model = std::make_unique<torch::jit::script::Module>(torch::jit::load(path));
             DBG("MODEL LOADED");
         }
         
         catch (const c10::Error& e)
         {
             DBG ("ERROR LOADING MODEL");
+            DBG(e.msg());
         }
         
         // *************************** Import audio ********************* //
         juce::AudioBuffer<float> audioBufferOffline;
 
         audioBufferOffline.makeCopyOf (recordedBuffer);
-
-        //auto fileLoaded = juce::File("/Users/rodolfoortiz/Downloads/TestZafiro Guitar 1.wav");
-        /*auto fileLoaded = juce::File("/Users/jsvaldezv/Documents/GitHub/Personal/Modelizer/TestOriginal.wav");
-        
-        formatReader = formatManager.createReaderFor(fileLoaded);
-
-        auto sampleLength = static_cast<int>(formatReader->lengthInSamples);
-        audioBufferOffline.setSize(2, sampleLength);
-
-        formatReader->read(&audioBufferOffline, 0, sampleLength, 0, true, false);*/
 
         // ************************ Process with model ***************** //
         juce::AudioBuffer<float> bufferOfflineProcessed;
@@ -103,8 +93,7 @@ public:
         }
 
         // *********************** Export audio ******************** //
-        //juce::File fileOut("/Users/rodolfoortiz/Downloads/test.wav");
-        juce::File fileOut("/Users/rodolfoortiz/Downloads/test.wav");
+        juce::File fileOut( juce::File::getSpecialLocation(juce::File::userDesktopDirectory).getFullPathName() + "/OutSignalModel.wav");
         
         fileOut.deleteFile();
 
@@ -142,6 +131,8 @@ private:
 
     juce::AudioBuffer<float> recordedBuffer;
     
+    std::string path{""};
+    
 };
 
 class DragDropComponent : public juce::Component, public juce::FileDragAndDropTarget
@@ -157,11 +148,11 @@ public:
     bool isInterestedInFileDrag (const juce::StringArray& files) override;
     void filesDropped (const juce::StringArray& files, int x, int y) override;
     
-    std::function<void()> makeLabelVisible;
+    std::function<void(juce::String inPath)> makeLabelVisible;
     
 private:
     
-    juce::String fileName {""};
+    juce::String modelPath {""};
     juce::Label dragDropLabel;
     
 };
@@ -185,6 +176,8 @@ private:
 
     juce::TextButton playButton { "Play" };
     juce::TextButton pauseButton { "Pause" };
+    
+    juce::String pathEditor {""};
 
     juce::Label processStatusLabel;
 

@@ -15,12 +15,12 @@ ModelizerAudioProcessorEditor::ModelizerAudioProcessorEditor (ModelizerAudioProc
 
     addAndMakeVisible(processStatusLabel);
     processStatusLabel.setFont (juce::Font(20.0f));
-    processStatusLabel.setText ("Recording...", juce::dontSendNotification);
     processStatusLabel.setColour (juce::Label::textColourId, juce::Colours::dimgrey);
     processStatusLabel.setVisible (false);
 
     addAndMakeVisible(dragDropComponent);
-    dragDropComponent.makeLabelVisible = [this] {
+    dragDropComponent.makeLabelVisible = [this] (juce::String inPath) {
+        pathEditor = inPath;
         dragDropColor = juce::Colour (126, 127, 154);
         repaint();
     };
@@ -78,15 +78,20 @@ void ModelizerAudioProcessorEditor::buttonClicked (juce::Button* b)
     if (&playButton == b)
     {
         audioProcessor.isRecordingOn = true;
+        
+        processStatusLabel.setText ("Recording...", juce::dontSendNotification);
+        processStatusLabel.setVisible(true);
     }
 
     else if (&pauseButton == b)
     {
         audioProcessor.isRecordingOn = false;
+        
+        processStatusLabel.setText ("Processing...", juce::dontSendNotification);
 
-        //juce::AudioBuffer<float> buffer { &audioProcessor.recordingArray, audioProcessor.getTotalNumInputChannels(), 0, (int)audioProcessor.recordingArray->size() };
-
-        processModel = std::make_unique<ThreadProcessing>(audioProcessor.recordingArray[0], audioProcessor.recordingArray[1]);
+        processModel = std::make_unique<ThreadProcessing>(audioProcessor.recordingArray[0],
+                                                          audioProcessor.recordingArray[1],
+                                                          pathEditor);
         processModel->startThread();
     }
 }
@@ -134,12 +139,10 @@ void DragDropComponent::filesDropped (const juce::StringArray& files, int x, int
         if(isInterestedInFileDrag(file))
         {
             auto myFile = std::make_unique<juce::File>(file);
-            fileName = myFile->getFileNameWithoutExtension() + myFile->getFileExtension();
             dragDropLabel.setText("Model loaded", juce::dontSendNotification);
 
-            DBG(fileName);
-
-            makeLabelVisible();
+            modelPath = myFile->getFullPathName();
+            makeLabelVisible(modelPath);
         }
     }
 
