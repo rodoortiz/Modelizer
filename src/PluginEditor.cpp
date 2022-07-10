@@ -3,6 +3,16 @@
 
 ModelizerAudioProcessorEditor::ModelizerAudioProcessorEditor (ModelizerAudioProcessor& p) : AudioProcessorEditor (&p), audioProcessor (p)
 {
+    addAndMakeVisible (playButton);
+    playButton.addListener (this);
+    playButton.setColour(juce::TextButton::buttonColourId, juce::Colour (0XFFFC7558));
+    playButton.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentWhite);
+
+    addAndMakeVisible (pauseButton);
+    pauseButton.addListener (this);
+    pauseButton.setColour(juce::TextButton::buttonColourId, juce::Colour (0XFFCDCCCC));
+    pauseButton.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentWhite);
+
     setSize (500, 300);
 }
 
@@ -35,14 +45,21 @@ void ModelizerAudioProcessorEditor::paint (juce::Graphics& g)
 
 void ModelizerAudioProcessorEditor::resized()
 {
-    juce::Rectangle<float> buttonArea { 0.2f, 0.2f };
-    button.setBoundsRelative (buttonArea);
-    button.setCentreRelative (0.5f, 0.5f);
+    juce::Rectangle<float> buttonArea { 0.2f, 0.1f };
+    playButton.setBoundsRelative (buttonArea);
+    playButton.setCentreRelative (0.55f, 0.27f);
+
+    pauseButton.setBoundsRelative (buttonArea);
+    pauseButton.setCentreRelative (0.77f, 0.27f);
 }
 
 void ModelizerAudioProcessorEditor::buttonClicked (juce::Button* b)
 {
-    if (&button == b)
+    if (&playButton == b)
+    {
+        
+    }
+    else if (&pauseButton == b)
     {
         processModel = std::make_unique<ThreadProcessing>();
         processModel->startThread();

@@ -124,8 +124,9 @@ private:
 
     ModelizerAudioProcessor& audioProcessor;
 
-    juce::TextButton button { "CLICK" };
-    
+    juce::TextButton playButton { "Play" };
+    juce::TextButton pauseButton { "Pause" };
+
     std::unique_ptr<ThreadProcessing> processModel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModelizerAudioProcessorEditor)
