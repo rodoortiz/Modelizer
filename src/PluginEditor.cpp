@@ -10,8 +10,14 @@ ModelizerAudioProcessorEditor::ModelizerAudioProcessorEditor (ModelizerAudioProc
 
     addAndMakeVisible (pauseButton);
     pauseButton.addListener (this);
-    pauseButton.setColour(juce::TextButton::buttonColourId, juce::Colour (0XFFCDCCCC));
-    pauseButton.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentWhite);
+    pauseButton.setColour (juce::TextButton::buttonColourId, juce::Colour (0XFFCDCCCC));
+    pauseButton.setColour (juce::ComboBox::outlineColourId, juce::Colours::transparentWhite);
+
+    addAndMakeVisible(processStatusLabel);
+    processStatusLabel.setFont (juce::Font(20.0f));
+    processStatusLabel.setText ("Recording...", juce::dontSendNotification);
+    processStatusLabel.setColour (juce::Label::textColourId, juce::Colours::dimgrey);
+    processStatusLabel.setVisible (false);
 
     setSize (500, 300);
 }
@@ -51,13 +57,15 @@ void ModelizerAudioProcessorEditor::resized()
 
     pauseButton.setBoundsRelative (buttonArea);
     pauseButton.setCentreRelative (0.77f, 0.27f);
+
+    processStatusLabel.setBoundsRelative (0.55f, 0.62f, 0.25f, 0.1f);
 }
 
 void ModelizerAudioProcessorEditor::buttonClicked (juce::Button* b)
 {
     if (&playButton == b)
     {
-        
+
     }
     else if (&pauseButton == b)
     {
