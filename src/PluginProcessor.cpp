@@ -13,16 +13,16 @@ ModelizerAudioProcessor::ModelizerAudioProcessor()
                        )
 #endif
 {
-    loadModelFromPytorch();
-    formatManager.registerBasicFormats();
+    //loadModelFromPytorch();
+    //formatManager.registerBasicFormats();
 }
 
 ModelizerAudioProcessor::~ModelizerAudioProcessor()
 {
-    formatReader = nullptr;
+    //formatReader = nullptr;
 }
 
-void ModelizerAudioProcessor::loadModelFromPytorch()
+/*void ModelizerAudioProcessor::loadModelFromPytorch()
 {
     try
     {
@@ -35,9 +35,9 @@ void ModelizerAudioProcessor::loadModelFromPytorch()
     {
         DBG ("ERROR LOADING MODEL");
     }
-}
+}*/
 
-void ModelizerAudioProcessor::processOfflineWithModel()
+/*void ModelizerAudioProcessor::processOfflineWithModel()
 {
     DBG("Starting offline...");
 
@@ -96,7 +96,7 @@ void ModelizerAudioProcessor::processOfflineWithModel()
 
     if (writer != nullptr)
         writer->writeFromAudioSampleBuffer(audioBufferOffline, 0, audioBufferOffline.getNumSamples());
-}
+}*/
 
 const String ModelizerAudioProcessor::getName() const
 {
@@ -156,7 +156,7 @@ void ModelizerAudioProcessor::changeProgramName ([[maybe_unused]] int index, [[m
 
 void ModelizerAudioProcessor::prepareToPlay ([[maybe_unused]] double sampleRate_, int samplesPerBlock_)
 {
-    sizeBuffer = samplesPerBlock_;
+    /*sizeBuffer = samplesPerBlock_;
     numChannels = getTotalNumInputChannels();
 
     for(auto channel = 0; channel < numChannels; channel++)
@@ -168,7 +168,7 @@ void ModelizerAudioProcessor::prepareToPlay ([[maybe_unused]] double sampleRate_
 
         auxBuffer[channel].setSize(numChannels, lengthInSamples, false, false, true);
         //auxBuffer[channel].clear();
-    }
+    }*/
 }
 
 void ModelizerAudioProcessor::releaseResources(){}
@@ -196,7 +196,7 @@ void ModelizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, [[maybe_
 {
     ScopedNoDenormals noDenormals;
 
-    auto numSamples = buffer.getNumSamples();
+    // auto numSamples = buffer.getNumSamples();
 
     // Process sequentially in real time with Model with one buffer
     /*modelBuffer.makeCopyOf(buffer);
@@ -265,7 +265,7 @@ void ModelizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, [[maybe_
     }*/
 }
 
-void ModelizerAudioProcessor::processRealTimeWithModel (juce::AudioBuffer<float>& inBuffer)
+/*void ModelizerAudioProcessor::processRealTimeWithModel (juce::AudioBuffer<float>& inBuffer)
 {
     modelBuffer.makeCopyOf(inBuffer);
 
@@ -292,7 +292,7 @@ void ModelizerAudioProcessor::processRealTimeWithModel (juce::AudioBuffer<float>
         auto outputDataPtr = outputData.data_ptr<float>();
         inBuffer.copyFrom (channel, 0, outputDataPtr, sizeBuffer);
     }
-}
+}*/
 
 bool ModelizerAudioProcessor::hasEditor() const
 {

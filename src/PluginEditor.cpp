@@ -26,6 +26,9 @@ void ModelizerAudioProcessorEditor::resized()
 void ModelizerAudioProcessorEditor::buttonClicked (juce::Button* b)
 {
     if (&button == b)
-        audioProcessor.processOfflineWithModel();
+    {
+        processModel = std::make_unique<ThreadProcessing>();
+        processModel->startThread();
+    }
 }
 

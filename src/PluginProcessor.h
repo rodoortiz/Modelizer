@@ -30,16 +30,14 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    void loadModelFromPytorch();
-
-    void processOfflineWithModel();
-
-    void processRealTimeWithModel (juce::AudioBuffer<float>& inBuffer);
+    //void loadModelFromPytorch();
+    //void processOfflineWithModel();
+    //void processRealTimeWithModel (juce::AudioBuffer<float>& inBuffer);
 
 private:
 
     // General data
-    int sizeBuffer {0};
+    /*int sizeBuffer {0};
     int numChannels {0};
 
     // Model data
@@ -56,7 +54,7 @@ private:
 
     int contSampleAux[2] {0};
     int contLoop[2] {0};
-    float multSamplerate {0.125f};
+    float multSamplerate {0.125f};*/
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModelizerAudioProcessor)
 
