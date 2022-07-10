@@ -18,7 +18,7 @@ ModelizerAudioProcessorEditor::ModelizerAudioProcessorEditor (ModelizerAudioProc
     processStatusLabel.setText ("Recording...", juce::dontSendNotification);
     processStatusLabel.setColour (juce::Label::textColourId, juce::Colours::dimgrey);
     processStatusLabel.setVisible (false);
-    
+
     addAndMakeVisible(dragDropComponent);
     dragDropComponent.makeLabelVisible = [this] {
         dragDropColor = juce::Colour (126, 127, 154);
@@ -69,7 +69,7 @@ void ModelizerAudioProcessorEditor::resized()
     pauseButton.setCentreRelative (0.77f, 0.27f);
 
     processStatusLabel.setBoundsRelative (0.55f, 0.62f, 0.25f, 0.1f);
-    
+
     dragDropComponent.setBounds (16, 60, 130, 228);
 }
 
@@ -77,12 +77,16 @@ void ModelizerAudioProcessorEditor::buttonClicked (juce::Button* b)
 {
     if (&playButton == b)
     {
-        
+        audioProcessor.isRecordingOn = true;
     }
-    
+
     else if (&pauseButton == b)
     {
-        processModel = std::make_unique<ThreadProcessing>();
+        audioProcessor.isRecordingOn = false;
+
+        //juce::AudioBuffer<float> buffer { &audioProcessor.recordingArray, audioProcessor.getTotalNumInputChannels(), 0, (int)audioProcessor.recordingArray->size() };
+
+        processModel = std::make_unique<ThreadProcessing>(audioProcessor.recordingArray[0], audioProcessor.recordingArray[1]);
         processModel->startThread();
     }
 }
@@ -119,7 +123,7 @@ bool DragDropComponent::isInterestedInFileDrag (const juce::StringArray& files)
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -132,12 +136,12 @@ void DragDropComponent::filesDropped (const juce::StringArray& files, int x, int
             auto myFile = std::make_unique<juce::File>(file);
             fileName = myFile->getFileNameWithoutExtension() + myFile->getFileExtension();
             dragDropLabel.setText("Model loaded", juce::dontSendNotification);
-            
+
             DBG(fileName);
-            
+
             makeLabelVisible();
         }
     }
-    
+
     repaint();
 }

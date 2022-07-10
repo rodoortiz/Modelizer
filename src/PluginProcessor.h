@@ -30,6 +30,9 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    bool isRecordingOn = false;
+    std::vector<float> recordingArray[2];
+
 private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModelizerAudioProcessor)

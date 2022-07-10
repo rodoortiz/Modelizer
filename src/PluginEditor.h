@@ -7,9 +7,26 @@ class ThreadProcessing : public juce::Thread
 {
 public:
     
-    ThreadProcessing() : juce::Thread("Buffer Thread")
+    ThreadProcessing (std::vector<float>& array, std::vector<float>& arrayTwo) : juce::Thread("Buffer Thread"), vectorDataOne(array), vectorDataTwo(arrayTwo)
     {
         formatManager.registerBasicFormats();
+
+        recordedBuffer.setSize(2, (int)array.size());
+
+        for (int channel = 0; channel < 2; ++channel)
+        {
+            for (size_t i = 0; i < recordedBuffer.getNumSamples(); ++i)
+            {
+                float sample;
+
+                if (channel == 0)
+                    sample = vectorDataOne[i];
+                else
+                    sample = vectorDataTwo[i];
+
+                recordedBuffer.setSample(channel, i, sample);
+            }
+        }
     }
     
     ~ThreadProcessing() override
@@ -29,8 +46,8 @@ public:
         //**************************** Load Model *********************** //
         try
         {
-            //model = std::make_unique<torch::jit::script::Module>(torch::jit::load("/Users/rodolfoortiz/Documents/JUCE_Projects/CLion_Projects/Modelizer/ClipperTSr.pt"));
-            model = std::make_unique<torch::jit::script::Module>(torch::jit::load("Users/jsvaldezv/Documents/GitHub/Personal/Modelizer/ATanDistortionTS.pt"));
+            model = std::make_unique<torch::jit::script::Module>(torch::jit::load("/Users/rodolfoortiz/Documents/JUCE_Projects/CLion_Projects/Modelizer/ATanDistortionTS.pt"));
+            //model = std::make_unique<torch::jit::script::Module>(torch::jit::load("Users/jsvaldezv/Documents/GitHub/Personal/Modelizer/ATanDistortionTS.pt"));
             
             DBG("MODEL LOADED");
         }
@@ -43,19 +60,21 @@ public:
         // *************************** Import audio ********************* //
         juce::AudioBuffer<float> audioBufferOffline;
 
+        audioBufferOffline.makeCopyOf (recordedBuffer);
+
         //auto fileLoaded = juce::File("/Users/rodolfoortiz/Downloads/TestZafiro Guitar 1.wav");
-        auto fileLoaded = juce::File("/Users/jsvaldezv/Documents/GitHub/Personal/Modelizer/TestOriginal.wav");
+        /*auto fileLoaded = juce::File("/Users/jsvaldezv/Documents/GitHub/Personal/Modelizer/TestOriginal.wav");
         
         formatReader = formatManager.createReaderFor(fileLoaded);
 
         auto sampleLength = static_cast<int>(formatReader->lengthInSamples);
         audioBufferOffline.setSize(2, sampleLength);
 
-        formatReader->read(&audioBufferOffline, 0, sampleLength, 0, true, false);
+        formatReader->read(&audioBufferOffline, 0, sampleLength, 0, true, false);*/
 
         // ************************ Process with model ***************** //
         juce::AudioBuffer<float> bufferOfflineProcessed;
-        bufferOfflineProcessed.makeCopyOf(audioBufferOffline);
+        bufferOfflineProcessed.makeCopyOf(recordedBuffer);
 
         sizeBuffer = bufferOfflineProcessed.getNumSamples();
         numChannels = bufferOfflineProcessed.getNumChannels();
@@ -85,7 +104,7 @@ public:
 
         // *********************** Export audio ******************** //
         //juce::File fileOut("/Users/rodolfoortiz/Downloads/test.wav");
-        juce::File fileOut("/Users/jsvaldezv/Downloads/test.wav");
+        juce::File fileOut("/Users/rodolfoortiz/Downloads/test.wav");
         
         fileOut.deleteFile();
 
@@ -93,9 +112,9 @@ public:
         std::unique_ptr<juce::AudioFormatWriter> writer;
 
         writer.reset(format.createWriterFor(new juce::FileOutputStream(fileOut),
-                                            formatReader->sampleRate,
+                                            48000,
                                             static_cast<unsigned int>(audioBufferOffline.getNumChannels()),
-                                            static_cast<int>(formatReader->bitsPerSample),
+                                            24,
                                             {},
                                             0));
 
@@ -117,6 +136,11 @@ private:
     
     // Model
     std::unique_ptr<torch::jit::script::Module> model;
+
+    std::vector<float>& vectorDataOne;
+    std::vector<float>& vectorDataTwo;
+
+    juce::AudioBuffer<float> recordedBuffer;
     
 };
 

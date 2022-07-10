@@ -107,7 +107,17 @@ void ModelizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, [[maybe_
 {
     ScopedNoDenormals noDenormals;
 
-
+    if (isRecordingOn)
+    {
+        for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+        {
+            for (int i = 0; i < buffer.getNumSamples(); ++i)
+            {
+                auto sample = buffer.getSample(channel, i);
+                recordingArray[channel].emplace_back(sample);
+            }
+        }
+    }
 
     // Process sequentially in real time with Model with many buffer
     /*for (auto channel = 0; channel < numChannels; channel++)
@@ -149,6 +159,35 @@ void ModelizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, [[maybe_
         }
     }*/
 }
+
+/*void ModelizerAudioProcessor::processRealTimeWithModel (juce::AudioBuffer<float>& inBuffer)
+{
+    modelBuffer.makeCopyOf(inBuffer);
+
+    std::vector<int64_t> blockSize = { inBuffer.getNumSamples() };
+
+    auto* modelBufferDataL = modelBuffer.getWritePointer(0);
+    auto* modelBufferDataR = modelBuffer.getWritePointer(1);
+
+    at::Tensor tensorFrameL = torch::from_blob(modelBufferDataL, blockSize);
+    at::Tensor tensorFrameR = torch::from_blob(modelBufferDataR, blockSize);
+    at::Tensor tensorFrame = at::stack({tensorFrameL, tensorFrameR});
+
+    sizeBuffer = static_cast<int>(getSampleRate() * multSamplerate);
+    tensorFrame = torch::reshape(tensorFrame, { 1, numChannels, sizeBuffer });
+
+    std::vector<torch::jit::IValue> inputs;
+    inputs.emplace_back(tensorFrame);
+
+    auto outputFrame = model.forward(inputs).toTensor();
+
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        auto outputData = outputFrame.index({0, channel, torch::indexing::Slice()});
+        auto outputDataPtr = outputData.data_ptr<float>();
+        inBuffer.copyFrom (channel, 0, outputDataPtr, sizeBuffer);
+    }
+}*/
 
 bool ModelizerAudioProcessor::hasEditor() const
 {
