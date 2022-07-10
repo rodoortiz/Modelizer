@@ -26,7 +26,8 @@ void ModelizerAudioProcessor::loadModelFromPytorch()
 {
     try
     {
-        model = torch::jit::load("/Users/rodolfoortiz/Documents/JUCE_Projects/CLion_Projects/Modelizer/ChannelKillerTS.pt");
+        model = torch::jit::load("/Users/rodolfoortiz/Documents/JUCE_Projects/CLion_Projects/Modelizer/ClipperTSr.pt");
+
         DBG("MODEL LOADED");
     }
 
@@ -224,7 +225,7 @@ void ModelizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, [[maybe_
     }*/
 
     // Process sequentially in real time with Model with many buffer
-    for (auto channel = 0; channel < numChannels; channel++)
+    /*for (auto channel = 0; channel < numChannels; channel++)
     {
         for (int i = 0; i < numSamples; i++) {
             float sample = buffer.getSample(channel, i);
@@ -261,7 +262,7 @@ void ModelizerAudioProcessor::processBlock (AudioBuffer<float>& buffer, [[maybe_
                 contLoop[channel]++;
             }
         }
-    }
+    }*/
 }
 
 void ModelizerAudioProcessor::processRealTimeWithModel (juce::AudioBuffer<float>& inBuffer)

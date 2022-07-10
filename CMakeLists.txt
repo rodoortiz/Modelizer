@@ -4,7 +4,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.12" CACHE STRING "Minimum OS X deployment ta
 project(Modelizer VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
-add_subdirectory(vv          /JUCE)
+add_subdirectory(modules/JUCE)
 
 set(CMAKE_PREFIX_PATH libtorch/)
 find_package(Torch REQUIRED)
