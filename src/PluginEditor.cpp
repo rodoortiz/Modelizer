@@ -3,10 +3,10 @@
 
 ModelizerAudioProcessorEditor::ModelizerAudioProcessorEditor (ModelizerAudioProcessor& p) : AudioProcessorEditor (&p), audioProcessor (p)
 {
-    addAndMakeVisible (playButton);
-    playButton.addListener (this);
-    playButton.setColour(juce::TextButton::buttonColourId, juce::Colour (0XFFFC7558));
-    playButton.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentWhite);
+    addAndMakeVisible (recordButton);
+    recordButton.addListener (this);
+    recordButton.setColour(juce::TextButton::buttonColourId, juce::Colour (0XFFFC7558));
+    recordButton.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentWhite);
 
     addAndMakeVisible (pauseButton);
     pauseButton.addListener (this);
@@ -17,6 +17,7 @@ ModelizerAudioProcessorEditor::ModelizerAudioProcessorEditor (ModelizerAudioProc
     processStatusLabel.setFont (juce::Font(20.0f));
     processStatusLabel.setColour (juce::Label::textColourId, juce::Colours::dimgrey);
     processStatusLabel.setVisible (false);
+    processStatusLabel.setJustificationType(juce::Justification::centred);
 
     addAndMakeVisible(dragDropComponent);
     dragDropComponent.makeLabelVisible = [this] (juce::String inPath) {
@@ -30,7 +31,7 @@ ModelizerAudioProcessorEditor::ModelizerAudioProcessorEditor (ModelizerAudioProc
 
 ModelizerAudioProcessorEditor::~ModelizerAudioProcessorEditor()
 {
-    playButton.removeListener (this);
+    recordButton.removeListener (this);
     pauseButton.removeListener (this);
 }
 
@@ -62,8 +63,8 @@ void ModelizerAudioProcessorEditor::paint (juce::Graphics& g)
 void ModelizerAudioProcessorEditor::resized()
 {
     juce::Rectangle<float> buttonArea { 0.2f, 0.1f };
-    playButton.setBoundsRelative (buttonArea);
-    playButton.setCentreRelative (0.55f, 0.27f);
+    recordButton.setBoundsRelative (buttonArea);
+    recordButton.setCentreRelative (0.55f, 0.27f);
 
     pauseButton.setBoundsRelative (buttonArea);
     pauseButton.setCentreRelative (0.77f, 0.27f);
@@ -75,8 +76,11 @@ void ModelizerAudioProcessorEditor::resized()
 
 void ModelizerAudioProcessorEditor::buttonClicked (juce::Button* b)
 {
-    if (&playButton == b)
+    if (&recordButton == b)
     {
+        audioProcessor.recordingArray[0].clear();
+        audioProcessor.recordingArray[1].clear();
+        
         audioProcessor.isRecordingOn = true;
         
         processStatusLabel.setText ("Recording...", juce::dontSendNotification);

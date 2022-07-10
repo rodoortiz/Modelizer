@@ -183,7 +183,7 @@ private:
 
     ModelizerAudioProcessor& audioProcessor;
 
-    juce::TextButton playButton { "Play" };
+    juce::TextButton recordButton { "Record" };
     juce::TextButton pauseButton { "Pause" };
     
     juce::String pathEditor {""};
