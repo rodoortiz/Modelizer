@@ -27,16 +27,25 @@ public:
         DBG("Starting processing in thread...");
         
         //**************************** Load Model *********************** //
-        std::unique_ptr<torch::jit::script::Module> model;
-        //model = std::make_unique<torch::jit::script::Module>(torch::jit::load("/Users/rodolfoortiz/Documents/JUCE_Projects/CLion_Projects/Modelizer/ClipperTSr.pt"));
+        try
+        {
+            //model = std::make_unique<torch::jit::script::Module>(torch::jit::load("/Users/rodolfoortiz/Documents/JUCE_Projects/CLion_Projects/Modelizer/ClipperTSr.pt"));
+            model = std::make_unique<torch::jit::script::Module>(torch::jit::load("Users/jsvaldezv/Documents/GitHub/Personal/Modelizer/ATanDistortionTS.pt"));
+            
+            DBG("MODEL LOADED");
+        }
         
-        model = std::make_unique<torch::jit::script::Module>(torch::jit::load("Users/jsvaldezv/Documents/GitHub/Personal/Modelizer/ClipperTSFinal.pt"));
+        catch (const c10::Error& e)
+        {
+            DBG ("ERROR LOADING MODEL");
+        }
         
         // *************************** Import audio ********************* //
         juce::AudioBuffer<float> audioBufferOffline;
 
         //auto fileLoaded = juce::File("/Users/rodolfoortiz/Downloads/TestZafiro Guitar 1.wav");
         auto fileLoaded = juce::File("/Users/jsvaldezv/Documents/GitHub/Personal/Modelizer/TestOriginal.wav");
+        
         formatReader = formatManager.createReaderFor(fileLoaded);
 
         auto sampleLength = static_cast<int>(formatReader->lengthInSamples);
@@ -77,6 +86,7 @@ public:
         // *********************** Export audio ******************** //
         //juce::File fileOut("/Users/rodolfoortiz/Downloads/test.wav");
         juce::File fileOut("/Users/jsvaldezv/Downloads/test.wav");
+        
         fileOut.deleteFile();
 
         juce::WavAudioFormat format;
@@ -85,7 +95,7 @@ public:
         writer.reset(format.createWriterFor(new juce::FileOutputStream(fileOut),
                                             formatReader->sampleRate,
                                             static_cast<unsigned int>(audioBufferOffline.getNumChannels()),
-                                            static_cast<unsigned int>(formatReader->bitsPerSample),
+                                            static_cast<int>(formatReader->bitsPerSample),
                                             {},
                                             0));
 
@@ -104,6 +114,9 @@ private:
     // Offline data
     juce::AudioFormatManager formatManager;
     juce::AudioFormatReader* formatReader {nullptr};
+    
+    // 
+    std::unique_ptr<torch::jit::script::Module> model;
     
 };
 

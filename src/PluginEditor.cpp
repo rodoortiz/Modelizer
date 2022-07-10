@@ -22,7 +22,9 @@ ModelizerAudioProcessorEditor::ModelizerAudioProcessorEditor (ModelizerAudioProc
     setSize (500, 300);
 }
 
-ModelizerAudioProcessorEditor::~ModelizerAudioProcessorEditor() {}
+ModelizerAudioProcessorEditor::~ModelizerAudioProcessorEditor()
+{
+}
 
 void ModelizerAudioProcessorEditor::paint (juce::Graphics& g)
 {
