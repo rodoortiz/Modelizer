@@ -91,7 +91,8 @@ void ModelizerAudioProcessorEditor::buttonClicked (juce::Button* b)
 
         processModel = std::make_unique<ThreadProcessing>(audioProcessor.recordingArray[0],
                                                           audioProcessor.recordingArray[1],
-                                                          pathEditor);
+                                                          pathEditor,
+                                                          processStatusLabel);
         processModel->startThread();
     }
 }

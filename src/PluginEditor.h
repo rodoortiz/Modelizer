@@ -7,7 +7,7 @@ class ThreadProcessing : public juce::Thread
 {
 public:
     
-    ThreadProcessing (std::vector<float>& array, std::vector<float>& arrayTwo, juce::String inPath) : juce::Thread("Buffer Thread"), vectorDataOne(array), vectorDataTwo(arrayTwo), path(inPath.toStdString())
+    ThreadProcessing (std::vector<float>& array, std::vector<float>& arrayTwo, juce::String inPath, juce::Label& inLabel) : juce::Thread("Buffer Thread"), vectorDataOne(array), vectorDataTwo(arrayTwo), path(inPath.toStdString()), label(inLabel)
     {
         formatManager.registerBasicFormats();
 
@@ -110,6 +110,11 @@ public:
         if (writer != nullptr)
             writer->writeFromAudioSampleBuffer(audioBufferOffline, 0, audioBufferOffline.getNumSamples());
         
+        juce::MessageManager::callAsync([&]
+        {
+            label.setText ("Ready!", juce::dontSendNotification);
+        });
+        
         DBG("Finished thread processing");
     }
     
@@ -132,6 +137,10 @@ private:
     juce::AudioBuffer<float> recordedBuffer;
     
     std::string path{""};
+    
+    juce::Label& label;
+    
+    
     
 };
 
