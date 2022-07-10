@@ -30,31 +30,7 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    //void loadModelFromPytorch();
-    //void processOfflineWithModel();
-    //void processRealTimeWithModel (juce::AudioBuffer<float>& inBuffer);
-
 private:
-
-    // General data
-    /*int sizeBuffer {0};
-    int numChannels {0};
-
-    // Model data
-    torch::jit::script::Module model;
-    juce::AudioSampleBuffer modelBuffer;
-
-    // Offline data
-    juce::AudioFormatManager formatManager;
-    juce::AudioFormatReader* formatReader {nullptr};
-
-    // Buffers Processing data
-    juce::AudioBuffer<float> processedModelBuffer[2];
-    juce::AudioBuffer<float> auxBuffer[2];
-
-    int contSampleAux[2] {0};
-    int contLoop[2] {0};
-    float multSamplerate {0.125f};*/
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModelizerAudioProcessor)
 
