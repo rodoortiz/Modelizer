@@ -18,12 +18,20 @@ ModelizerAudioProcessorEditor::ModelizerAudioProcessorEditor (ModelizerAudioProc
     processStatusLabel.setText ("Recording...", juce::dontSendNotification);
     processStatusLabel.setColour (juce::Label::textColourId, juce::Colours::dimgrey);
     processStatusLabel.setVisible (false);
+    
+    addAndMakeVisible(dragDropComponent);
+    dragDropComponent.makeLabelVisible = [this] {
+        dragDropColor = juce::Colour (126, 127, 154);
+        repaint();
+    };
 
     setSize (500, 300);
 }
 
 ModelizerAudioProcessorEditor::~ModelizerAudioProcessorEditor()
 {
+    playButton.removeListener (this);
+    pauseButton.removeListener (this);
 }
 
 void ModelizerAudioProcessorEditor::paint (juce::Graphics& g)
@@ -40,8 +48,8 @@ void ModelizerAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (juce::Colours::white);
     g.drawText ("MODULIZER", textRect, juce::Justification::centred);
 
-    g.setColour(juce::Colour (0XFFDFDFDF));
-    juce::Rectangle<float> borderRect {130.0f, 230.0f};
+    g.setColour(dragDropColor);
+    juce::Rectangle<float> borderRect { 130.0f, 230.0f };
     borderRect.setCentre(80,175);
     g.drawRoundedRectangle(borderRect, 10.0f, 2.0f);
 
@@ -61,14 +69,17 @@ void ModelizerAudioProcessorEditor::resized()
     pauseButton.setCentreRelative (0.77f, 0.27f);
 
     processStatusLabel.setBoundsRelative (0.55f, 0.62f, 0.25f, 0.1f);
+    
+    dragDropComponent.setBounds (16, 60, 130, 228);
 }
 
 void ModelizerAudioProcessorEditor::buttonClicked (juce::Button* b)
 {
     if (&playButton == b)
     {
-
+        
     }
+    
     else if (&pauseButton == b)
     {
         processModel = std::make_unique<ThreadProcessing>();
@@ -76,3 +87,57 @@ void ModelizerAudioProcessorEditor::buttonClicked (juce::Button* b)
     }
 }
 
+// ***********************************************
+
+DragDropComponent::DragDropComponent()
+{
+    addAndMakeVisible(dragDropLabel);
+    dragDropLabel.setFont (juce::Font(15.0f));
+    dragDropLabel.setText ("Drag and drop your model", juce::dontSendNotification);
+    dragDropLabel.setColour (juce::Label::textColourId, juce::Colours::dimgrey);
+    dragDropLabel.setJustificationType(juce::Justification::centred);
+}
+
+DragDropComponent::~DragDropComponent() {}
+
+void DragDropComponent::paint (juce::Graphics& g)
+{
+    g.fillAll(juce::Colour (0,0,0).withAlpha(0.0f));
+}
+
+void DragDropComponent::resized()
+{
+    dragDropLabel.setBoundsRelative(0.5f - 0.45f, 0.5f - 0.1f, 0.9f, 0.2f);
+}
+
+bool DragDropComponent::isInterestedInFileDrag (const juce::StringArray& files)
+{
+    for(auto file : files)
+    {
+        if(file.contains(".pt"))
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+void DragDropComponent::filesDropped (const juce::StringArray& files, int x, int y)
+{
+    for(auto file : files)
+    {
+        if(isInterestedInFileDrag(file))
+        {
+            auto myFile = std::make_unique<juce::File>(file);
+            fileName = myFile->getFileNameWithoutExtension() + myFile->getFileExtension();
+            dragDropLabel.setText("Model loaded", juce::dontSendNotification);
+            
+            DBG(fileName);
+            
+            makeLabelVisible();
+        }
+    }
+    
+    repaint();
+}

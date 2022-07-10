@@ -115,8 +115,30 @@ private:
     juce::AudioFormatManager formatManager;
     juce::AudioFormatReader* formatReader {nullptr};
     
-    // 
+    // Model
     std::unique_ptr<torch::jit::script::Module> model;
+    
+};
+
+class DragDropComponent : public juce::Component, public juce::FileDragAndDropTarget
+{
+public:
+    
+    DragDropComponent();
+    ~DragDropComponent() override;
+    
+    void paint (juce::Graphics&) override;
+    void resized() override;
+    
+    bool isInterestedInFileDrag (const juce::StringArray& files) override;
+    void filesDropped (const juce::StringArray& files, int x, int y) override;
+    
+    std::function<void()> makeLabelVisible;
+    
+private:
+    
+    juce::String fileName {""};
+    juce::Label dragDropLabel;
     
 };
 
@@ -143,6 +165,9 @@ private:
     juce::Label processStatusLabel;
 
     std::unique_ptr<ThreadProcessing> processModel;
+    
+    DragDropComponent dragDropComponent;
+    juce::Colour dragDropColor {223,223,233};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModelizerAudioProcessorEditor)
 };
